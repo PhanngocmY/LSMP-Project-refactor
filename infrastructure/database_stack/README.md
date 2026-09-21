@@ -109,14 +109,23 @@ docker compose up -d
 
 **Wait ~10-15 seconds** for initialization on first run. Check logs:
 ```bash
-docker compose logs -f lsmp-postgres 2>&1 | head -30
+docker compose logs -f lsmp-postgres 2>&1 | head -40
 ```
-**Expected output includes:**
+
+> ℹ️ **How initialization works:** Docker runs all scripts in `/docker-entrypoint-initdb.d/` in alphabetical order on the **first container start only** (when the data volume is empty):
+> 1. `01_schema.sql` (from `schema.sql`) — Creates the 6 database tables + TimescaleDB hypertables
+> 2. `02_grant_least_privilege.sql` (from `grant_least_privilege.sql`) — Creates the `wazuh_writer` user and grants INSERT-ONLY privileges
+>
+> ⚠️ **The `wazuh_writer` user is NOT created by `schema.sql`** — it is created by `grant_least_privilege.sql` which runs second. If you only see the tables but no `wazuh_writer` user, check if `02_grant_least_privilege.sql` executed (look for the NOTICE in logs).
+
+**Expected log output includes (in this order):**
 ```
 LOG:  database system is ready to accept connections
 NOTICE:  TimescaleDB hypertables, compression, and retention policies successfully initialized.
 NOTICE:  Successfully applied Principle of Least Privilege: User wazuh_writer has INSERT-ONLY access.
 ```
+
+If you see the first `NOTICE` but NOT the second, it means `grant_least_privilege.sql` failed — check for SQL errors in the logs above it.
 
 ---
 
@@ -158,6 +167,8 @@ docker exec lsmp-postgres psql -U lsmp_admin -d lsmp_db -c "\dt"
 
 ### Step 6: Verify wazuh_writer user was created
 
+> ℹ️ This user is created by `grant_least_privilege.sql` (mounted as `02_grant_least_privilege.sql`), NOT by `schema.sql`. If it's missing, check that the file is correctly mounted in `docker-compose.yml` and look for errors in `docker compose logs`.
+
 ```bash
 docker exec lsmp-postgres psql -U lsmp_admin -d lsmp_db -c "SELECT rolname FROM pg_roles WHERE rolname = 'wazuh_writer';"
 ```
@@ -168,6 +179,11 @@ docker exec lsmp-postgres psql -U lsmp_admin -d lsmp_db -c "SELECT rolname FROM 
 --------------
  wazuh_writer
 (1 row)
+```
+
+If you get `(0 rows)`, the init script failed. Check logs:
+```bash
+docker compose logs lsmp-postgres 2>&1 | grep -A5 "ERROR\|FATAL\|grant_least"
 ```
 
 ---
@@ -202,6 +218,27 @@ abc123...      lsmp-postgres   0.50%   128MiB / 2GiB       ...
 ```
 
 MEM LIMIT should show `2GiB`.
+
+---
+
+### Step 9: Verify PostgreSQL worker process settings
+
+```bash
+docker exec lsmp-postgres psql -U lsmp_admin -d lsmp_db -c "SHOW max_worker_processes; SHOW timescaledb.max_background_workers;"
+```
+
+**Expected output:**
+```
+ max_worker_processes
+----------------------
+ 20
+(1 row)
+
+ timescaledb.max_background_workers
+-------------------------------------
+ 16
+(1 row)
+```
 
 ---
 

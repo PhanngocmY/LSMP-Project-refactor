@@ -31,7 +31,8 @@ services:
       -c maintenance_work_mem=128MB
       -c effective_cache_size=1GB
       -c max_connections=200
-      -c timescaledb.max_background_workers=4
+      -c max_worker_processes=20
+      -c timescaledb.max_background_workers=16
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
