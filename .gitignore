@@ -149,6 +149,9 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.*.example
 .envrc
 .venv
 env/
@@ -156,6 +159,47 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Keys, Certificates, and Secrets
+*.pem
+*.key
+*.crt
+*.cer
+*.cert
+*.pfx
+*.p12
+*.csr
+certs/
+cert/
+secrets/
+*.secret
+*.secrets
+id_rsa*
+id_ecdsa*
+id_ed25519*
+wazuh_indexer_ssl_certs/
+wazuh-certificates.tar
+
+# Database Backups & Dumps
+*.dump
+*.pgdump
+*.sql.gz
+pgdata/
+
+# Datasets and Trained Models (keep directory structure via .gitkeep)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/train_test_split/*
+!data/train_test_split/.gitkeep
+models_store/*
+!models_store/.gitkeep
+*.pkl
+*.joblib
+
 
 # Spyder project settings
 .spyderproject
