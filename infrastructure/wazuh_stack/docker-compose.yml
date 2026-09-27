@@ -100,7 +100,7 @@ volumes:
   wazuh_api_configuration:
   wazuh_etc:
   wazuh_logs:
-    - name: 
+    name: wazuh_logs
   wazuh_queue:
   wazuh_var_multigroups:
   wazuh_integrations:
