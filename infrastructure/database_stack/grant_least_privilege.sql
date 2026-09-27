@@ -20,16 +20,12 @@ GRANT USAGE ON SCHEMA public TO wazuh_writer;
 
 -- 3. Grant INSERT-ONLY privileges on ingest tables (NO UPDATE, NO DELETE, NO DROP)
 GRANT INSERT, SELECT ON TABLE log_event TO wazuh_writer;
-GRANT INSERT, SELECT ON TABLE feature_vectors TO wazuh_writer;
-GRANT INSERT, SELECT ON TABLE anomaly_result TO wazuh_writer;
-GRANT INSERT, SELECT ON TABLE risk_score TO wazuh_writer;
-GRANT INSERT, SELECT, USAGE ON ALL SEQUENCES IN SCHEMA public TO wazuh_writer;
 
 -- 4. Revoke UPDATE, DELETE, and TRUNCATE privileges to prevent log tampering
-REVOKE UPDATE, DELETE, TRUNCATE ON TABLE log_event FROM wazuh_writer;
-REVOKE UPDATE, DELETE, TRUNCATE ON TABLE feature_vectors FROM wazuh_writer;
-REVOKE UPDATE, DELETE, TRUNCATE ON TABLE anomaly_result FROM wazuh_writer;
-REVOKE UPDATE, DELETE, TRUNCATE ON TABLE risk_score FROM wazuh_writer;
+REVOKE UPDATE, DELETE, TRUNCATE, INSERT, SELECT ON TABLE log_event FROM wazuh_writer;
+REVOKE UPDATE, DELETE, TRUNCATE, INSERT, SELECT ON TABLE feature_vectors FROM wazuh_writer;
+REVOKE UPDATE, DELETE, TRUNCATE, INSERT, SELECT ON TABLE anomaly_result FROM wazuh_writer;
+REVOKE UPDATE, DELETE, TRUNCATE, INSERT, SELECT ON TABLE risk_score FROM wazuh_writer;
 
 -- 5. Set search_path for safety
 ALTER USER wazuh_writer SET search_path TO public;
